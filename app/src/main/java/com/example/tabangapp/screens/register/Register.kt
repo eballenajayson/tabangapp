@@ -45,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.tabangapp.R
 import com.example.tabangapp.ui.theme.PurpleGrey40
@@ -56,16 +57,17 @@ fun Register(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    var username by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("johndoe") }
     var password by remember { mutableStateOf("12345") }
     var confirmPassword by remember { mutableStateOf("12345") }
-    var fullName by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("John Doe") }
     var phoneNumber by remember { mutableStateOf("12345") }
     var passwordVisible by remember { mutableStateOf(false) }
     val isLoading = mainViewModel.isLoading.value
     val snackbarHostState = remember { SnackbarHostState() }
     val isUserInserted = mainViewModel.isUserInserted.value
     val errorMessage = mainViewModel.errorMessage.value
+    val registerSuccessMessage = mainViewModel.registerSuccessMessage.value
 
 
     Scaffold(
@@ -196,7 +198,8 @@ fun Register(
                                     fullName = fullName,
                                     phoneNumber = phoneNumber
                                 )
-                                mainViewModel.addUser(user)
+//                                mainViewModel.addUser(user)
+                                mainViewModel.apiRegister(user)
                             }
                         }
                     }
@@ -230,9 +233,9 @@ fun Register(
             }
         }
     }
-    LaunchedEffect(isUserInserted) {
-        if (isUserInserted) {
-            snackbarHostState.showSnackbar("Registration successful 🎉")
+    LaunchedEffect(isUserInserted, registerSuccessMessage) {
+        if (isUserInserted && registerSuccessMessage != null) {
+            snackbarHostState.showSnackbar(registerSuccessMessage)
             mainViewModel.resetInsertState()
             navController.navigate("start")
         }

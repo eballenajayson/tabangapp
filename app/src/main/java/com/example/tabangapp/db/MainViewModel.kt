@@ -1,6 +1,7 @@
 package com.example.tabangapp.db
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -9,8 +10,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tabangapp.RetrofitInstance
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -26,6 +30,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
 
+    private val _registerSuccessMessage = mutableStateOf<String?>(null)
+    val registerSuccessMessage: State<String?> = _registerSuccessMessage
+
     private val _logoutMessage = mutableStateOf<String?>(null)
     val logoutMessage: State<String?> = _logoutMessage
 
@@ -34,6 +41,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _loginSuccess = mutableStateOf(false)
     val loginSuccess: State<Boolean> = _loginSuccess
+
 
     private val _logoutSuccess = mutableStateOf(false)
     val logoutSuccess: State<Boolean> = _logoutSuccess
@@ -71,6 +79,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         calendar.set(java.util.Calendar.SECOND, 59)
         calendar.set(java.util.Calendar.MILLISECOND, 999)
         endOfDay = calendar.timeInMillis
+    }
+
+    fun apiRegister(user: User) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val result = RetrofitInstance.api.register(user)
+                repository.addUser(result)
+                _isUserInserted.value = true
+                _registerSuccessMessage.value = "Registration successful 🎉"
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val message = try {
+                    val json = org.json.JSONObject(errorBody ?: "{}")
+                    json.optString("detail", "Unknown error ❌")
+                } catch (ex: Exception) {
+                    "Unknown error ❌"
+                }
+                _errorMessage.value = "$message ❌"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "${e.message} ❌"
+            }
+        }
     }
 
     fun updateUserLocation(location: LatLng){
@@ -195,6 +227,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun resetInsertState() {
         _isLoading.value = false
         _isUserInserted.value = false
+        _registerSuccessMessage.value = null
     }
 
     fun resetError() {

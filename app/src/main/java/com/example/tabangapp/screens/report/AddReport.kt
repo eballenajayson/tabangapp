@@ -139,7 +139,7 @@ fun AddReport(
                 currentUser?.fullName?.let {
                     OutlinedTextField(
                         value = it,
-                        enabled = false,
+                        readOnly = true,
                         onValueChange = {},
                         label = { Text("Full Name") },
                         modifier = modifier.fillMaxWidth(),
@@ -150,7 +150,7 @@ fun AddReport(
                 currentUser?.phoneNumber?.let {
                     OutlinedTextField(
                         value = it,
-                        enabled = false,
+                        readOnly = true,
                         onValueChange = {},
                         label = { Text("Phone Number") },
                         modifier = modifier.fillMaxWidth(),
