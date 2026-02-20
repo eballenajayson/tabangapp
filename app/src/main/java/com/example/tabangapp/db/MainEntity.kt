@@ -24,5 +24,5 @@ data class Report(
     val longitude: String,
     val latitude: String,
     val imageUri: String? = null,
-    val dateCreated: Long = System.currentTimeMillis()
+    val dateCreated: String? = null
 )
