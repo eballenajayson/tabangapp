@@ -99,7 +99,7 @@ fun Register(
                 )
                 OutlinedTextField(
                     value = fullName,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = {
                         fullName = it
                         username = it
@@ -115,7 +115,7 @@ fun Register(
                 )
                 OutlinedTextField(
                     value = phoneNumber,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = { phoneNumber = it },
                     modifier = modifier.fillMaxWidth(),
                     label = { Text("Phone number *") },
@@ -128,7 +128,7 @@ fun Register(
                 )
                 OutlinedTextField(
                     value = username,
-                    enabled = false,
+                    readOnly = true,
                     onValueChange = {},
                     modifier = modifier.fillMaxWidth(),
                     label = { Text("Username") },
@@ -137,7 +137,7 @@ fun Register(
                 )
                 OutlinedTextField(
                     value = password,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = { password = it },
                     modifier = modifier.fillMaxWidth(),
                     label = { Text("Password") },
@@ -163,7 +163,7 @@ fun Register(
                 )
                 OutlinedTextField(
                     value = confirmPassword,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = { confirmPassword = it },
                     modifier = modifier.fillMaxWidth(),
                     label = { Text("Confirm your password") },
