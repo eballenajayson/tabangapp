@@ -155,7 +155,7 @@ fun Start(
                 )
                 OutlinedTextField(
                     value = username,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = { username = it },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Username") },
@@ -164,7 +164,7 @@ fun Start(
                 )
                 OutlinedTextField(
                     value = password,
-                    enabled = !isLoading,
+                    readOnly = isLoading,
                     onValueChange = { password = it },
                     modifier = modifier.fillMaxWidth(),
                     label = { Text("Password") },
