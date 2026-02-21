@@ -51,12 +51,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import android.Manifest
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.net.toUri
+import com.example.tabangapp.R
 import com.example.tabangapp.ui.theme.Purple40
 import com.example.tabangapp.ui.theme.PurpleGrey40
 import java.io.File
@@ -236,16 +238,14 @@ fun AddReport(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    imageUri?.let { uri ->
-                        Image(
-                            painter = rememberAsyncImagePainter(uri),
-                            contentDescription = "Selected Image",
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.Crop,
-                        )
-                    }
+                    Image(
+                        painter = rememberAsyncImagePainter(imageUri?:R.drawable.no_image),
+                        contentDescription = "Selected Image",
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentScale = ContentScale.Fit,
+                    )
                     OutlinedButton(
                         modifier = modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
