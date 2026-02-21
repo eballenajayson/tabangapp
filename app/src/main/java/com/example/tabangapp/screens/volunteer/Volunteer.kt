@@ -4,6 +4,7 @@ package com.example.tabangapp.screens.volunteer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,14 +59,28 @@ fun Volunteer(
     var reportLocations by remember { mutableStateOf<List<Report>>(emptyList()) }
     val showLogoutDialog = remember { mutableStateOf(false) }
     val userLocation = mainViewModel.userLocation.value
+    val currentUser = mainViewModel.currentUser
+    val refreshMessage = mainViewModel.refreshMessage.value
 
     LogoutConfirmationDialog(
         showDialog = showLogoutDialog,
         onLogoutConfirmed = { mainViewModel.logout() }
     )
 
-    LaunchedEffect(Unit) {
-        mainViewModel.getAllReports { reports ->
+    LaunchedEffect(currentUser) {
+        if(currentUser!= null){
+            mainViewModel.fetchAllReports()
+            mainViewModel.getAllReports{ reports ->
+                reportLocations = reports
+            }
+        }
+    }
+
+    LaunchedEffect(isLoading, refreshMessage) {
+        if(refreshMessage != null) {
+            snackbarHostState.showSnackbar(refreshMessage)
+        }
+        mainViewModel.getAllReports{ reports ->
             reportLocations = reports
         }
     }
@@ -110,7 +126,8 @@ fun Volunteer(
                 modifier = modifier,
                 userLocation = userLocation,
                 showMyLocation = true,
-                reportLocations = reportLocations
+                reportLocations = reportLocations,
+                mainViewModel = mainViewModel,
             )
         }
     }

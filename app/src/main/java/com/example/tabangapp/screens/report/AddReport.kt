@@ -59,8 +59,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.core.net.toUri
 import com.example.tabangapp.R
+import com.example.tabangapp.db.Report
 import com.example.tabangapp.ui.theme.Purple40
 import com.example.tabangapp.ui.theme.PurpleGrey40
+import com.google.android.gms.location.Priority
 import java.io.File
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -78,6 +80,8 @@ fun AddReport(
     val longitude = mainViewModel.longitude.value
     val latitude = mainViewModel.latitude.value
     val isReportInserted = mainViewModel.isReportInserted.value
+    val insertReportSuccessMessage = mainViewModel.insertReportSuccessMessage.value
+    val errorMessage = mainViewModel.errorMessage.value
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -94,6 +98,21 @@ fun AddReport(
                 }
             }
             imageUri = file.toUri()
+        }
+    }
+
+    LaunchedEffect(isReportInserted, insertReportSuccessMessage) {
+        if (isReportInserted && insertReportSuccessMessage!=null) {
+            snackbarHostState.showSnackbar(insertReportSuccessMessage)
+            mainViewModel.resetInsertReportState()
+            navController.navigate("victim")
+        }
+    }
+
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(errorMessage)
+            mainViewModel.resetError()
         }
     }
 
@@ -169,7 +188,7 @@ fun AddReport(
                     maxLines = 10,
                     minLines = 5,
                     shape = RoundedCornerShape(8.dp),
-                    enabled = !isLoading
+                    readOnly = isLoading
                 )
                 Row(
                     modifier = modifier
@@ -185,7 +204,7 @@ fun AddReport(
                         label = { Text("Longitude") },
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
-                        enabled = !isLoading,
+                        readOnly = isLoading,
                         isError = longitude.isBlank()
                     )
                     OutlinedTextField(
@@ -195,7 +214,7 @@ fun AddReport(
                         label = { Text("Latitude") },
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
-                        enabled = !isLoading,
+                        readOnly = isLoading,
                         isError = latitude.isBlank()
                     )
                     ElevatedButton(
@@ -215,13 +234,18 @@ fun AddReport(
                             if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
                                 coroutineScope.launch {
                                     try {
-                                        val location = fusedLocationClient.lastLocation.await()
-                                        location?.let {
+                                        val location = fusedLocationClient
+                                            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                                            .await()
+
+                                        if (location != null) {
                                             mainViewModel.updateLongitude(location.longitude.toString())
                                             mainViewModel.updateLatitude(location.latitude.toString())
+                                            Log.d("TABANGAPP_LOG", "${location.longitude} | ${location.latitude}")
                                         }
                                     } catch (e: Exception) {
                                         // handle error
+                                        Log.d("TABANGAPP_LOG", e.toString())
                                     }
                                 }
                             }
@@ -271,16 +295,19 @@ fun AddReport(
                     onClick = {
                         if (
                             longitude.isNotBlank() &&
-                            latitude.isNotBlank()
+                            latitude.isNotBlank() &&
+                            currentUser != null
                         ){
-                            mainViewModel.insertReport(
-                                fullName = currentUser?.fullName.toString(),
-                                phoneNumber = currentUser?.phoneNumber.toString(),
+                            val report = Report(
+                                userId = currentUser.id,
+                                fullName = currentUser.fullName,
+                                phoneNumber = currentUser.fullName,
                                 details = details,
                                 longitude = longitude,
                                 latitude = latitude,
-                                imageUri = imageUri?.toString()
+                                imageUri = imageUri.toString()
                             )
+                            mainViewModel.apiAddReport(context, report, imageUri)
                         }
                     }
                 ){
@@ -294,13 +321,6 @@ fun AddReport(
                     }
                 }
             }
-        }
-    }
-    LaunchedEffect(isReportInserted) {
-        if (isReportInserted) {
-            snackbarHostState.showSnackbar("Add report successful 🎉")
-            mainViewModel.resetInsertReportState()
-            navController.navigate("victim")
         }
     }
 }

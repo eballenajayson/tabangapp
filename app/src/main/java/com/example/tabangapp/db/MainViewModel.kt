@@ -1,7 +1,10 @@
 package com.example.tabangapp.db
 
 import android.app.Application
+import android.content.Context
+import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +19,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = mutableStateOf(false)
@@ -33,15 +41,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _registerSuccessMessage = mutableStateOf<String?>(null)
     val registerSuccessMessage: State<String?> = _registerSuccessMessage
 
+    private val _insertReportSuccessMessage = mutableStateOf<String?>(null)
+    val insertReportSuccessMessage: State<String?> = _insertReportSuccessMessage
+
     private val _logoutMessage = mutableStateOf<String?>(null)
     val logoutMessage: State<String?> = _logoutMessage
+
+    private val _refreshMessage = mutableStateOf<String?>(null)
+    val refreshMessage: State<String?> = _refreshMessage
 
     private val getAllUser: LiveData<List<User>>
     private val repository: MainRepository
 
     private val _loginSuccess = mutableStateOf(false)
     val loginSuccess: State<Boolean> = _loginSuccess
-
 
     private val _logoutSuccess = mutableStateOf(false)
     val logoutSuccess: State<Boolean> = _logoutSuccess
@@ -54,6 +67,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _userLocation = mutableStateOf<LatLng?>(null)
     val userLocation: MutableState<LatLng?> = _userLocation
+
+    private val _reports = MutableStateFlow<List<Report>>(emptyList())
+    val reports: StateFlow<List<Report>> = _reports
+
+    private val _reportsPerUser = MutableStateFlow<List<Report>>(emptyList())
+    val reportsPerUser: StateFlow<List<Report>> = _reportsPerUser
+
+//    private val _currentUser = mutableStateOf<User?>(null)
+//    val currentUser: MutableState<User?> = _currentUser
 
     var currentUser: User? = null
     private val startOfDay: Long
@@ -79,6 +101,97 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         calendar.set(java.util.Calendar.SECOND, 59)
         calendar.set(java.util.Calendar.MILLISECOND, 999)
         endOfDay = calendar.timeInMillis
+    }
+
+    fun fetchAllReports() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val result = RetrofitInstance.api.getAllReports()
+                repository.insertReports(result)
+                _reports.value = result
+                _isLoading.value = false
+                _refreshMessage.value = "Successfully loaded new reports 🎉"
+                Log.d("TABANGAPP_LOG", "$result")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _isLoading.value = false
+                _refreshMessage.value = null
+            }
+        }
+    }
+
+    private fun uriToMultipart(context: Context, uri: Uri): MultipartBody.Part {
+        val contentResolver = context.contentResolver
+        val inputStream = contentResolver.openInputStream(uri)!!
+        val file = File(context.cacheDir, "upload_image.jpg")
+
+        file.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+
+        val requestFile = file
+            .asRequestBody("image/*".toMediaTypeOrNull())
+
+        return MultipartBody.Part.createFormData(
+            "image",
+            file.name,
+            requestFile
+        )
+    }
+
+
+    fun apiAddReport(context: Context, report: Report, imageUri: Uri?){
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val userId = report.userId.toString()
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val fullName = report.fullName
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val phoneNumber = report.phoneNumber
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val details = report.details
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val longitude = report.longitude
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val latitude = report.latitude
+                    .toRequestBody("text/plain".toMediaTypeOrNull())
+
+                val imagePart = imageUri?.let {
+                    uriToMultipart(context, it)
+                }
+                val result = RetrofitInstance.api.addReport(
+                    userId,
+                    fullName,
+                    phoneNumber,
+                    details,
+                    longitude,
+                    latitude,
+                    imagePart
+                )
+                repository.insertReport(result)
+                _isReportInserted.value = true
+                _insertReportSuccessMessage.value = "Successfully added 🎉"
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val message = try {
+                    val json = org.json.JSONObject(errorBody ?: "{}")
+                    json.optString("detail", "Unknown error ❌")
+                } catch (ex: Exception) {
+                    "Unknown error ❌"
+                }
+                _errorMessage.value = "$message ❌"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "${e.message} ❌"
+            }
+        }
     }
 
     fun apiRegister(user: User) {
@@ -121,10 +234,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAllReports(onResult: (List<Report>) -> Unit) {
         viewModelScope.launch {
-            val reports = repository.getAllReports(
-                startOfDay = startOfDay,
-                endOfDay = endOfDay,
-            )
+            val reports = repository.getAllReports()
             onResult(reports)
         }
     }
@@ -133,12 +243,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun login(username: String, password: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            val valid = validateUser(username, password)
-            if (valid) {
-                val user = repository.getUserByUsername(username)
+            val user = repository.getUserByUsername(username)
+            if(user?.password == password){
                 _loginSuccess.value = true
                 currentUser = user
-
             } else {
                 _errorMessage.value = "Invalid username or password ❌"
             }
@@ -155,6 +263,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun insertReport(
+        userId: Int,
         details: String,
         fullName: String,
         phoneNumber: String,
@@ -162,9 +271,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         latitude: String,
         imageUri: String?
     ) {
-        currentUser?.let { user ->
+        viewModelScope.launch {
+            _isLoading.value = true
             val report = Report(
-                userId = user.id,
+                userId = userId,
                 details = details,
                 fullName = fullName,
                 phoneNumber = phoneNumber,
@@ -172,11 +282,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 latitude = latitude,
                 imageUri = imageUri
             )
-            viewModelScope.launch {
-                _isLoading.value = true
-                repository.insertReport(report)
-                _isReportInserted.value = true
-            }
+            repository.insertReport(report)
+            _isReportInserted.value = true
         }
     }
 
@@ -216,6 +323,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun resetInsertReportState() {
         _isLoading.value = false
         _isReportInserted.value = false
+        _insertReportSuccessMessage.value = null
     }
 
     fun resetLoginState() {

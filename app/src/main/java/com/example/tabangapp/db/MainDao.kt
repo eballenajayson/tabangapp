@@ -2,14 +2,26 @@ package com.example.tabangapp.db
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 
 @Dao
 interface MainDao {
-    @Query("SELECT * FROM reports WHERE dateCreated BETWEEN :startOfDay AND :endOfDay")
-    suspend fun getAllReports(startOfDay: Long, endOfDay: Long): List<Report>
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertReports(reports: List<Report>)
+
+    @Query("""
+    SELECT * FROM reports
+    WHERE replace(dateCreated, 'T', ' ') BETWEEN 
+        datetime('now','localtime','start of day')
+        AND 
+        datetime('now','localtime','start of day','+1 day','-1 second')
+    ORDER BY dateCreated DESC
+""")
+    suspend fun getAllReports(): List<Report>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(report: Report)

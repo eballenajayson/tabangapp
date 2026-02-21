@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,12 +15,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -32,12 +41,19 @@ import com.google.maps.android.compose.*
 import com.example.tabangapp.db.Report
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import com.example.tabangapp.R
+import com.example.tabangapp.db.MainViewModel
 import com.example.tabangapp.ui.theme.Blue
+import com.example.tabangapp.ui.theme.Purple40
+import com.example.tabangapp.ui.theme.Purple80
 import com.example.tabangapp.ui.theme.PurpleGrey40
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @SuppressLint("LocalContextResourcesRead")
@@ -47,6 +63,7 @@ fun CustomGoogleMap(
     userLocation: LatLng? = null,
     showMyLocation: Boolean = false,
     reportLocations: List<Report> = emptyList(),
+    mainViewModel: MainViewModel,
 ) {
     val defaultLocation = LatLng(14.5995, 120.9842)
     val cameraPositionState = rememberCameraPositionState {
@@ -54,6 +71,8 @@ fun CustomGoogleMap(
     }
     var selectedReport by remember { mutableStateOf<Report?>(null) }
     val context = LocalContext.current
+    val isLoading = mainViewModel.isLoading.value
+
 
     // 🚀 Move camera when userLocation changes
     LaunchedEffect(userLocation) {
@@ -107,7 +126,47 @@ fun CustomGoogleMap(
                 }
             }
         }
+        ElevatedButton (
+            modifier = modifier
+                .padding(top = 8.dp, start = 10.dp)
+                .align(Alignment.TopStart),
+            shape = RoundedCornerShape(4.dp),
+            colors = ButtonDefaults.elevatedButtonColors(
+                containerColor = Color.White,
+                contentColor = Color.Black,
+            ),
+            onClick = {
+                mainViewModel.fetchAllReports()
+            },
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 8.dp
+            )
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(24.dp),
+                    color = Purple40,
+                    strokeWidth = 2.dp,
+                )
+            } else {
+                Icon(
+                    tint = Purple40,
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = "Refresh Icon"
+                )
+                Text("Refresh")
+            }
+        }
+
         selectedReport?.let { report ->
+            val formattedDate = remember(report.dateCreated) {
+                report.dateCreated?.let {
+                    LocalDateTime.parse(it)
+                        .format(DateTimeFormatter.ofPattern("MMM dd, yyyy hh:mm a"))
+                } ?: ""
+            }
+
             Card(
                 shape = RoundedCornerShape(8.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -123,25 +182,23 @@ fun CustomGoogleMap(
                     report.imageUri?.let { uriString ->
                         val uri = uriString.toUri()
                         val painter = rememberAsyncImagePainter(
-                            model = uri
+                            model = "http://10.0.2.2:8000${uri}"
                         )
                         Image(
                             painter = painter,
                             contentDescription = "Report Image",
                             modifier = modifier
                                 .fillMaxWidth()
-                                .height(200.dp)
+                                .height(150.dp)
                                 .padding(bottom = 10.dp),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            contentScale = ContentScale.Fit
                         )
                     }
                     Text(
-                        text = "Reported on: ${
-                            SimpleDateFormat(
-                                "MMM dd, yyyy HH:mm",
-                                Locale.getDefault()
-                            ).format(report.dateCreated)
-                        }"
+                        text = "${report.imageUri}"
+                    )
+                    Text(
+                        text = "Reported on: $formattedDate"
                     )
                     Text(text = "Reporter: ${report.fullName}")
                     Text(

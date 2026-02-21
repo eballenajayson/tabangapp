@@ -3,8 +3,12 @@ package com.example.tabangapp.db
 import androidx.lifecycle.LiveData
 
 class MainRepository(private val mainDao: MainDao) {
-    suspend fun getAllReports(startOfDay: Long, endOfDay: Long): List<Report> {
-        return mainDao.getAllReports(startOfDay = startOfDay, endOfDay = endOfDay)
+    suspend fun insertReports(reports: List<Report>) {
+        mainDao.insertReports(reports)
+    }
+
+    suspend fun getAllReports(): List<Report> {
+        return mainDao.getAllReports()
     }
 
     suspend fun insertReport(report: Report) {
@@ -18,7 +22,7 @@ class MainRepository(private val mainDao: MainDao) {
     val readAllData: LiveData<List<User>> = mainDao.getAllUser()
 
     suspend fun addUser(user: User){
-        mainDao.addUser(user)
+        return mainDao.addUser(user)
     }
 
     suspend fun getUserByUsername(username: String): User? {

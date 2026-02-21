@@ -78,6 +78,7 @@ fun Start(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    val currentUser = mainViewModel.currentUser
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -101,7 +102,7 @@ fun Start(
         }
     )
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit, currentUser) {
         val permissionCheck = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION

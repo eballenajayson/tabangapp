@@ -198,7 +198,6 @@ fun Register(
                                     fullName = fullName,
                                     phoneNumber = phoneNumber
                                 )
-//                                mainViewModel.addUser(user)
                                 mainViewModel.apiRegister(user)
                             }
                         }
