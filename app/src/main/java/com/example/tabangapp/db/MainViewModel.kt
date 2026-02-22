@@ -74,10 +74,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _reportsPerUser = MutableStateFlow<List<Report>>(emptyList())
     val reportsPerUser: StateFlow<List<Report>> = _reportsPerUser
 
+    private val _currentUser = mutableStateOf<User?>(null)
+    val currentUser: MutableState<User?> = _currentUser
+
 //    private val _currentUser = mutableStateOf<User?>(null)
 //    val currentUser: MutableState<User?> = _currentUser
 
-    var currentUser: User? = null
+//    var currentUser: User? = null
     private val startOfDay: Long
     private val endOfDay: Long
 
@@ -103,6 +106,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         endOfDay = calendar.timeInMillis
     }
 
+     fun updateLoggedInAs(loggedInAs: String){
+        viewModelScope.launch {
+            _currentUser.value?.let { obj ->
+                repository.updateUserLoggedInAs(
+                    obj.username,
+                    loggedInAs
+                )
+                _currentUser.value = repository.getUserByUsername(obj.username)
+            }
+        }
+    }
+
+    fun checkLastUserStatus() {
+        viewModelScope.launch {
+            val user = repository.getUserLastUser()
+            _currentUser.value = user
+            if(user != null){
+                if(user.isLoggedIn){
+                    _currentUser.value?.let { obj ->
+                            repository.updateUserLoginStatus(
+                                obj.username,
+                                obj.loggedInAs,
+                                true
+                            )
+                        _currentUser.value = repository.getUserByUsername(obj.username)
+                        login(obj.username, obj.password, obj.loggedInAs)
+                    }
+                }
+            }
+        }
+    }
+
     fun fetchAllReports() {
         viewModelScope.launch {
             try {
@@ -112,7 +147,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 _reports.value = result
                 _isLoading.value = false
                 _refreshMessage.value = "Successfully loaded new reports 🎉"
-                Log.d("TABANGAPP_LOG", "$result")
             } catch (e: Exception) {
                 e.printStackTrace()
                 _isLoading.value = false
@@ -240,13 +274,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun login(username: String, password: String) {
+    fun login(username: String, password: String, loggedInAs: String) {
         viewModelScope.launch {
             _isLoading.value = true
             val user = repository.getUserByUsername(username)
             if(user?.password == password){
                 _loginSuccess.value = true
-                currentUser = user
+                repository.updateUserLoginStatus(user.username, loggedInAs, true)
+                _currentUser.value = repository.getUserByUsername(user.username)
             } else {
                 _errorMessage.value = "Invalid username or password ❌"
             }
@@ -256,9 +291,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun logout() {
         viewModelScope.launch {
             _isLoading.value = true
-            currentUser = null
+            _currentUser.value?.let { user ->
+                repository.updateUserLoginStatus(
+                    user.username,
+                    user.loggedInAs,
+                    false
+                )
+                _currentUser.value = repository.getUserByUsername(user.username)
+            }
             _logoutSuccess.value = true
-            _logoutMessage.value = "You have been logged out!"
+            _logoutMessage.value = "You have been logged out 🎉"
         }
     }
 
@@ -288,7 +330,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getReportsForCurrentUser(onResult: (List<Report>) -> Unit) {
-        currentUser?.let { user ->
+        _currentUser.value?.let { user ->
             viewModelScope.launch {
                 val reports = repository.getReportsForUser(user.id)
                 onResult(reports)

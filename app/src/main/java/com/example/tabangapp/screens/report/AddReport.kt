@@ -52,6 +52,7 @@ import kotlinx.coroutines.tasks.await
 import android.Manifest
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -73,7 +74,7 @@ fun AddReport(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val currentUser = mainViewModel.currentUser
+    val currentUser = mainViewModel.currentUser.value
     var details by remember { mutableStateOf("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val isLoading = mainViewModel.isLoading.value
@@ -241,11 +242,11 @@ fun AddReport(
                                         if (location != null) {
                                             mainViewModel.updateLongitude(location.longitude.toString())
                                             mainViewModel.updateLatitude(location.latitude.toString())
-                                            Log.d("TABANGAPP_LOG", "${location.longitude} | ${location.latitude}")
+//                                            Log.d("TABANGAPP_LOG", "${location.longitude} | ${location.latitude}")
                                         }
                                     } catch (e: Exception) {
                                         // handle error
-                                        Log.d("TABANGAPP_LOG", e.toString())
+//                                        Log.d("TABANGAPP_LOG", e.toString())
                                     }
                                 }
                             }
@@ -313,8 +314,9 @@ fun AddReport(
                 ){
                     if (isLoading) {
                         CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
                             color = Color.White,
-                            strokeWidth = 1.dp,
+                            strokeWidth = 2.dp
                         )
                     } else {
                         Text("SUBMIT REPORT")

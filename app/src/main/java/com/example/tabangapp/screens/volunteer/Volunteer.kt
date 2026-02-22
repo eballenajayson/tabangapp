@@ -59,7 +59,7 @@ fun Volunteer(
     var reportLocations by remember { mutableStateOf<List<Report>>(emptyList()) }
     val showLogoutDialog = remember { mutableStateOf(false) }
     val userLocation = mainViewModel.userLocation.value
-    val currentUser = mainViewModel.currentUser
+    val currentUser = mainViewModel.currentUser.value
     val refreshMessage = mainViewModel.refreshMessage.value
 
     LogoutConfirmationDialog(

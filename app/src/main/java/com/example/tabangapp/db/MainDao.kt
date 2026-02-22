@@ -10,6 +10,20 @@ import androidx.room.Transaction
 
 @Dao
 interface MainDao {
+    @Query(""" UPDATE users 
+               SET loggedInAs = :loggedInAs
+               WHERE username = :username""")
+    suspend fun updateUserLoggedInAs(username: String, loggedInAs: String)
+
+    @Query(""" UPDATE users 
+               SET loggedInAs = :loggedInAs, 
+               isLoggedIn = :isLoggedIn
+               WHERE username = :username""")
+    suspend fun updateUserLoginStatus(username: String, loggedInAs: String, isLoggedIn: Boolean)
+
+    @Query("SELECT * FROM users ORDER BY id DESC LIMIT 1")
+    suspend fun getUserLastUser(): User?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertReports(reports: List<Report>)
 

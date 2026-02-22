@@ -3,6 +3,18 @@ package com.example.tabangapp.db
 import androidx.lifecycle.LiveData
 
 class MainRepository(private val mainDao: MainDao) {
+    suspend fun updateUserLoggedInAs(username: String, loggedInAs: String) {
+        mainDao.updateUserLoggedInAs(username, loggedInAs)
+    }
+
+    suspend fun updateUserLoginStatus(username: String, loggedInAs: String, isLoggedIn: Boolean) {
+        mainDao.updateUserLoginStatus(username, loggedInAs, isLoggedIn)
+    }
+
+    suspend fun getUserLastUser(): User? {
+        return mainDao.getUserLastUser()
+    }
+
     suspend fun insertReports(reports: List<Report>) {
         mainDao.insertReports(reports)
     }

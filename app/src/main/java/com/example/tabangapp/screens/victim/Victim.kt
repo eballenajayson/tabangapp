@@ -66,7 +66,7 @@ fun Victim(
     var userReports by remember { mutableStateOf<List<Report>>(emptyList()) }
     val snackbarHostState = remember { SnackbarHostState() }
     val showLogoutDialog = remember { mutableStateOf(false) }
-    val currentUser = mainViewModel.currentUser
+    val currentUser = mainViewModel.currentUser.value
     val reports = mainViewModel.reports
 
     LogoutConfirmationDialog(

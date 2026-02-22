@@ -196,7 +196,9 @@ fun Register(
                                     username = username,
                                     password = password,
                                     fullName = fullName,
-                                    phoneNumber = phoneNumber
+                                    phoneNumber = phoneNumber,
+                                    loggedInAs = "",
+                                    isLoggedIn = false
                                 )
                                 mainViewModel.apiRegister(user)
                             }
@@ -205,8 +207,9 @@ fun Register(
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
                             color = Color.White,
-                            strokeWidth = 1.dp,
+                            strokeWidth = 2.dp
                         )
                     } else {
                         Text("Register")

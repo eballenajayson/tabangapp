@@ -10,7 +10,9 @@ data class User(
     val username: String,
     val password: String,
     val fullName: String,
-    val phoneNumber: String
+    val phoneNumber: String,
+    val loggedInAs: String = "",
+    val isLoggedIn: Boolean = false,
 )
 
 @Entity(tableName = "reports")

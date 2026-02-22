@@ -2,6 +2,7 @@ package com.example.tabangapp.screens.start
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,7 +80,7 @@ fun Start(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val currentUser = mainViewModel.currentUser
+    val currentUser = mainViewModel.currentUser.value
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -102,7 +104,7 @@ fun Start(
         }
     )
 
-    LaunchedEffect(Unit, currentUser) {
+    LaunchedEffect(Unit) {
         val permissionCheck = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -122,6 +124,48 @@ fun Start(
             }
         } else {
             locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        mainViewModel.checkLastUserStatus()
+    }
+
+    LaunchedEffect(selectedIndex) {
+        var destination = ""
+        if(selectedIndex==0){
+            destination = "volunteer"
+            mainViewModel.updateLoggedInAs(destination)
+        }
+        if(selectedIndex==1){
+            destination = "victim"
+            mainViewModel.updateLoggedInAs(destination)
+        }
+    }
+
+    LaunchedEffect(loginSuccess, errorMessage) {
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(errorMessage)
+            mainViewModel.resetLoginState()
+        }
+        if (loginSuccess) {
+            Log.d("TABANGAPP_LOG", "$currentUser")
+            snackbarHostState.showSnackbar("Successfully logged in 🎉")
+            if(currentUser != null){
+                if(currentUser.loggedInAs == "volunteer"){
+                    navController.navigate("volunteer"){
+                        popUpTo(0){ inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+                if(currentUser.loggedInAs == "victim"){
+                    navController.navigate("victim"){
+                        popUpTo(0){ inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+            mainViewModel.resetLoginState()
         }
     }
 
@@ -233,11 +277,14 @@ fun Start(
                         contentColor = Color.White
                     ),
                     onClick = {
-                        mainViewModel.login(username, password)
+                        if (currentUser != null) {
+                            mainViewModel.login(currentUser.username, currentUser.password, currentUser.loggedInAs)
+                        }
                     }
                 ) {
                     if (isLoading) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
                             color = Color.White,
                             strokeWidth = 2.dp
                         )
@@ -263,18 +310,6 @@ fun Start(
                     )
                 }
             }
-        }
-    }
-    LaunchedEffect(loginSuccess, errorMessage) {
-        if (errorMessage != null) {
-            snackbarHostState.showSnackbar(errorMessage)
-            mainViewModel.resetLoginState()
-        }
-
-        if (loginSuccess) {
-            val destination = if (selectedIndex == 0) "volunteer" else "victim"
-            navController.navigate(destination)
-            mainViewModel.resetLoginState()
         }
     }
 }
