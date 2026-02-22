@@ -69,6 +69,19 @@ fun Register(
     val errorMessage = mainViewModel.errorMessage.value
     val registerSuccessMessage = mainViewModel.registerSuccessMessage.value
 
+    LaunchedEffect(isUserInserted, registerSuccessMessage) {
+        if (isUserInserted && registerSuccessMessage != null) {
+            snackbarHostState.showSnackbar(registerSuccessMessage)
+            mainViewModel.resetInsertState()
+            navController.navigate("start")
+        }
+    }
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) {
+            snackbarHostState.showSnackbar(errorMessage)
+            mainViewModel.resetError()
+        }
+    }
 
     Scaffold(
         snackbarHost = {
@@ -233,19 +246,6 @@ fun Register(
                     )
                 }
             }
-        }
-    }
-    LaunchedEffect(isUserInserted, registerSuccessMessage) {
-        if (isUserInserted && registerSuccessMessage != null) {
-            snackbarHostState.showSnackbar(registerSuccessMessage)
-            mainViewModel.resetInsertState()
-            navController.navigate("start")
-        }
-    }
-    LaunchedEffect(errorMessage) {
-        if (errorMessage != null) {
-            snackbarHostState.showSnackbar(errorMessage)
-            mainViewModel.resetError()
         }
     }
 }

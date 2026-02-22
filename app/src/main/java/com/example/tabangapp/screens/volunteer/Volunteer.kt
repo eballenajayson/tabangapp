@@ -85,6 +85,19 @@ fun Volunteer(
         }
     }
 
+    LaunchedEffect(logoutSuccess, logoutMessage) {
+        if (logoutMessage != null) {
+            snackbarHostState.showSnackbar(logoutMessage)
+        }
+        if (logoutSuccess) {
+            navController.navigate("start") {
+                popUpTo(0) { inclusive = true }
+                launchSingleTop = true
+            }
+            mainViewModel.resetLogoutState()
+        }
+    }
+
     Scaffold (
         topBar = {
             Surface(
@@ -129,19 +142,6 @@ fun Volunteer(
                 reportLocations = reportLocations,
                 mainViewModel = mainViewModel,
             )
-        }
-    }
-
-    LaunchedEffect(logoutSuccess, logoutMessage) {
-        if (logoutMessage != null) {
-            snackbarHostState.showSnackbar(logoutMessage)
-        }
-        if (logoutSuccess) {
-            navController.navigate("start") {
-                popUpTo(0) { inclusive = true }
-                launchSingleTop = true
-            }
-            mainViewModel.resetLogoutState()
         }
     }
 }
