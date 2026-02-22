@@ -187,7 +187,7 @@ fun Start(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter(R.drawable.logo),
+                    painter = rememberAsyncImagePainter(R.drawable.logo3),
                     contentDescription = "Logo",
                     modifier = Modifier
                         .size(150.dp),
