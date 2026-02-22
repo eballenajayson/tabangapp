@@ -149,7 +149,6 @@ fun Start(
             mainViewModel.resetLoginState()
         }
         if (loginSuccess) {
-            Log.d("TABANGAPP_LOG", "$currentUser")
             snackbarHostState.showSnackbar("Successfully logged in 🎉")
             if(currentUser != null){
                 if(currentUser.loggedInAs == "volunteer"){
