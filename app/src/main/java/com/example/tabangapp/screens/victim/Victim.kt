@@ -30,6 +30,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -48,6 +49,8 @@ import com.example.tabangapp.db.MainViewModel
 import com.example.tabangapp.db.Report
 import androidx.core.net.toUri
 import com.example.tabangapp.components.LogoutConfirmationDialog
+import com.example.tabangapp.ui.theme.PurpleGrey40
+import com.example.tabangapp.ui.theme.Red
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -103,6 +106,10 @@ fun Victim(
                 tonalElevation = 4.dp,
             ) {
                 TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White,
+                        titleContentColor = Color.Black
+                    ),
                     title = { Text("How can we help?") },
                     navigationIcon = {},
                     actions = {
@@ -112,6 +119,7 @@ fun Victim(
                             }
                         ) {
                             Icon(
+                                tint = Red,
                                 imageVector = Icons.Filled.Logout,
                                 contentDescription = "Localized description"
                             )
@@ -180,6 +188,8 @@ fun Victim(
                 }
             }
             FloatingActionButton(
+                containerColor = PurpleGrey40,
+                contentColor = Color.White,
                 onClick = {
                     navController.navigate("add-report")
                 },

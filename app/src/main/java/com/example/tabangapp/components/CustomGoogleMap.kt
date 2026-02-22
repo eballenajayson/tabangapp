@@ -51,6 +51,7 @@ import com.example.tabangapp.ui.theme.Blue
 import com.example.tabangapp.ui.theme.Purple40
 import com.example.tabangapp.ui.theme.Purple80
 import com.example.tabangapp.ui.theme.PurpleGrey40
+import com.example.tabangapp.ui.theme.Red
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -72,9 +73,13 @@ fun CustomGoogleMap(
     var selectedReport by remember { mutableStateOf<Report?>(null) }
     val context = LocalContext.current
     val isLoading = mainViewModel.isLoading.value
+    val showLogoutDialog = remember { mutableStateOf(false) }
 
+    LogoutConfirmationDialog(
+        showDialog = showLogoutDialog,
+        onLogoutConfirmed = { mainViewModel.logout() }
+    )
 
-    // 🚀 Move camera when userLocation changes
     LaunchedEffect(userLocation) {
         userLocation?.let {
             cameraPositionState.animate(
@@ -126,36 +131,72 @@ fun CustomGoogleMap(
                 }
             }
         }
-        ElevatedButton (
+        Column (
             modifier = modifier
-                .padding(top = 8.dp, start = 10.dp)
-                .align(Alignment.TopStart),
-            shape = RoundedCornerShape(4.dp),
-            colors = ButtonDefaults.elevatedButtonColors(
-                containerColor = Color.White,
-                contentColor = Color.Black,
-            ),
-            onClick = {
-                mainViewModel.fetchAllReports()
-            },
-            elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 8.dp
-            )
+                .width(150.dp)
+                .align(Alignment.TopStart)
+                .padding(start = 10.dp, top = 8.dp, end = 15.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp),
-                    color = Purple40,
-                    strokeWidth = 2.dp,
+            ElevatedButton (
+                modifier = modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = Red,
+                    contentColor = Color.White,
+                ),
+                onClick = {
+                    showLogoutDialog.value = true
+                },
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 8.dp
                 )
-            } else {
-                Icon(
-                    tint = Purple40,
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Refresh Icon"
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Icon(
+                        tint = Color.White,
+                        imageVector = Icons.Filled.Logout,
+                        contentDescription = "Logout Icon"
+                    )
+                    Text("Logout")
+                }
+            }
+            ElevatedButton (
+                modifier = modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(4.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = Blue,
+                    contentColor = Color.White,
+                ),
+                onClick = {
+                    mainViewModel.fetchAllReports()
+                },
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 8.dp
                 )
-                Text("Refresh")
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(24.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Icon(
+                        tint = Color.White,
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Refresh Icon"
+                    )
+                    Text("Refresh")
+                }
             }
         }
 
