@@ -163,6 +163,9 @@ fun Victim(
                             Column(modifier = modifier.padding(16.dp)) {
                                 report.imageUri?.let { uriString ->
                                     val uri = uriString.toUri()
+//                                    val painter = rememberAsyncImagePainter(
+//                                        model = "http://10.0.2.2:8000${uri}"
+//                                    )
                                     val painter = rememberAsyncImagePainter(
                                         model = "https://tabangapi-fastapi-production.up.railway.app${uri}"
                                     )
