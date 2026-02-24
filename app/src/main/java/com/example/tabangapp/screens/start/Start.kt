@@ -131,19 +131,19 @@ fun Start(
         mainViewModel.checkLastUserStatus()
     }
 
-    LaunchedEffect(selectedIndex) {
-        var destination = ""
-        if(selectedIndex==0){
-            destination = "volunteer"
-            mainViewModel.updateLoggedInAs(destination)
-        }
-        if(selectedIndex==1){
-            destination = "victim"
-            mainViewModel.updateLoggedInAs(destination)
-        }
-    }
+//    LaunchedEffect(selectedIndex) {
+//        var destination = ""
+//        if(selectedIndex==0){
+//            destination = "volunteer"
+//            mainViewModel.updateLoggedInAs(destination)
+//        }
+//        if(selectedIndex==1){
+//            destination = "victim"
+//            mainViewModel.updateLoggedInAs(destination)
+//        }
+//    }
 
-    LaunchedEffect(loginSuccess, errorMessage) {
+    LaunchedEffect(loginSuccess, errorMessage, currentUser) {
         if (errorMessage != null) {
             snackbarHostState.showSnackbar(errorMessage)
             mainViewModel.resetLoginState()
@@ -278,8 +278,10 @@ fun Start(
                         contentColor = Color.White
                     ),
                     onClick = {
-                        if (currentUser != null) {
-                            mainViewModel.login(currentUser.username, currentUser.password, currentUser.loggedInAs)
+                        when(selectedIndex){
+                            0 -> mainViewModel.apiLogin(username, password, "volunteer")
+                            1 -> mainViewModel.apiLogin(username, password, "victim")
+                            else -> mainViewModel.apiLogin(username, password, "volunteer")
                         }
                     }
                 ) {

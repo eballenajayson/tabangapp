@@ -1,6 +1,7 @@
 package com.example.tabangapp.screens.victim
 
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,7 +71,7 @@ fun Victim(
     val snackbarHostState = remember { SnackbarHostState() }
     val showLogoutDialog = remember { mutableStateOf(false) }
     val currentUser = mainViewModel.currentUser.value
-    val reports = mainViewModel.reports
+    val reports = mainViewModel.reports.value
 
     LogoutConfirmationDialog(
         showDialog = showLogoutDialog,
@@ -79,11 +80,6 @@ fun Victim(
 
     LaunchedEffect(currentUser, reports, Unit) {
         mainViewModel.fetchAllReports()
-        if(currentUser!= null){
-            mainViewModel.getReportsForCurrentUser { reports ->
-                userReports = reports
-            }
-        }
     }
 
     LaunchedEffect(logoutSuccess, logoutMessage) {
@@ -145,7 +141,7 @@ fun Victim(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = modifier.fillMaxSize()
                 ) {
-                    items(userReports) { report ->
+                    items(reports) { report ->
                         val formattedDate = remember(report.dateCreated) {
                             report.dateCreated?.let {
                                 LocalDateTime.parse(it)
@@ -167,7 +163,7 @@ fun Victim(
 //                                        model = "http://10.0.2.2:8000${uri}"
 //                                    )
                                     val painter = rememberAsyncImagePainter(
-                                        model = "https://tabangapi-fastapi-production.up.railway.app${uri}"
+                                        model = "https://api-rescuenow.onrender.com${uri}"
                                     )
                                     Image(
                                         painter = painter,

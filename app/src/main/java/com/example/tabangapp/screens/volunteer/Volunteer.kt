@@ -67,26 +67,19 @@ fun Volunteer(
     val logoutMessage = mainViewModel.logoutMessage.value
     val logoutSuccess = mainViewModel.logoutSuccess.value
     val isLoading = mainViewModel.isLoading.value
-    var reportLocations by remember { mutableStateOf<List<Report>>(emptyList()) }
     val userLocation = mainViewModel.userLocation.value
     val currentUser = mainViewModel.currentUser.value
     val refreshMessage = mainViewModel.refreshMessage.value
+    val reports = mainViewModel.reports.value
 
-    LaunchedEffect(currentUser) {
-        if(currentUser!= null){
-            mainViewModel.fetchAllReports()
-            mainViewModel.getAllReports{ reports ->
-                reportLocations = reports
-            }
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.fetchAllReports()
+        mainViewModel.resetFetchAllReports()
     }
 
     LaunchedEffect(isLoading, refreshMessage) {
         if(refreshMessage != null) {
             snackbarHostState.showSnackbar(refreshMessage)
-        }
-        mainViewModel.getAllReports{ reports ->
-            reportLocations = reports
         }
     }
 
@@ -120,7 +113,7 @@ fun Volunteer(
                 modifier = modifier,
                 userLocation = userLocation,
                 showMyLocation = true,
-                reportLocations = reportLocations,
+                reportLocations = reports,
                 mainViewModel = mainViewModel,
             )
         }

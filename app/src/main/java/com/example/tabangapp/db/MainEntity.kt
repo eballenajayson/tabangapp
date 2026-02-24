@@ -3,6 +3,12 @@ package com.example.tabangapp.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+data class LoginRequest(
+    val username: String,
+    val password: String,
+    val loggedInAs: String
+)
+
 @Entity(tableName = "users")
 data class User(
     @PrimaryKey(autoGenerate = true)

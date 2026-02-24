@@ -226,7 +226,7 @@ fun CustomGoogleMap(
 //                            model = "http://10.0.2.2:8000${uri}"
 //                        )
                         val painter = rememberAsyncImagePainter(
-                            model = "https://tabangapi-fastapi-production.up.railway.app${uri}"
+                            model = "https://api-rescuenow.onrender.com${uri}"
                         )
                         Image(
                             painter = painter,

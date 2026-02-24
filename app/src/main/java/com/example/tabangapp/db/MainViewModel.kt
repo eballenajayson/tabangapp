@@ -50,9 +50,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _refreshMessage = mutableStateOf<String?>(null)
     val refreshMessage: State<String?> = _refreshMessage
 
-    private val getAllUser: LiveData<List<User>>
-    private val repository: MainRepository
-
     private val _loginSuccess = mutableStateOf(false)
     val loginSuccess: State<Boolean> = _loginSuccess
 
@@ -68,42 +65,43 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _userLocation = mutableStateOf<LatLng?>(null)
     val userLocation: MutableState<LatLng?> = _userLocation
 
-    private val _reports = MutableStateFlow<List<Report>>(emptyList())
-    val reports: StateFlow<List<Report>> = _reports
-
-    private val _reportsPerUser = MutableStateFlow<List<Report>>(emptyList())
-    val reportsPerUser: StateFlow<List<Report>> = _reportsPerUser
+    private val _reports = mutableStateOf<List<Report>>(emptyList())
+    val reports: MutableState<List<Report>> = _reports
 
     private val _currentUser = mutableStateOf<User?>(null)
     val currentUser: MutableState<User?> = _currentUser
 
-//    private val _currentUser = mutableStateOf<User?>(null)
-//    val currentUser: MutableState<User?> = _currentUser
-
-//    var currentUser: User? = null
-    private val startOfDay: Long
-    private val endOfDay: Long
+    private val repository: MainRepository
 
     init {
         val mainDao = MainDatabase.getDatabase(application).mainDao()
         repository = MainRepository(mainDao)
-        getAllUser = repository.readAllData
+    }
 
-        val calendar = java.util.Calendar.getInstance()
-
-        // Start of today
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
-        calendar.set(java.util.Calendar.MINUTE, 0)
-        calendar.set(java.util.Calendar.SECOND, 0)
-        calendar.set(java.util.Calendar.MILLISECOND, 0)
-        startOfDay = calendar.timeInMillis
-
-        // End of today
-        calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
-        calendar.set(java.util.Calendar.MINUTE, 59)
-        calendar.set(java.util.Calendar.SECOND, 59)
-        calendar.set(java.util.Calendar.MILLISECOND, 999)
-        endOfDay = calendar.timeInMillis
+    fun apiLogin(username: String, password: String, loggedInAs: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val request = LoginRequest(username, password, loggedInAs)
+            try {
+                val result = RetrofitInstance.api.login(request)
+                repository.addUser(result)
+                repository.updateUserLoginStatus(username, loggedInAs, true)
+                _loginSuccess.value = true
+                _currentUser.value = repository.getUserByUsername(username)
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val message = try {
+                    val json = org.json.JSONObject(errorBody ?: "{}")
+                    json.optString("detail", "Unknown error ❌")
+                } catch (ex: Exception) {
+                    "Unknown error ❌"
+                }
+                _errorMessage.value = "$message ❌"
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _errorMessage.value = "${e.message} ❌"
+            }
+        }
     }
 
      fun updateLoggedInAs(loggedInAs: String){
@@ -140,18 +138,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun fetchAllReports() {
         viewModelScope.launch {
-            try {
-                _isLoading.value = true
-                val result = RetrofitInstance.api.getAllReports()
-                repository.insertReports(result)
-                _reports.value = result
-                _isLoading.value = false
-                _refreshMessage.value = "Successfully loaded new reports 🎉"
-            } catch (e: Exception) {
-                e.printStackTrace()
-                _isLoading.value = false
-                _refreshMessage.value = null
-            }
+            _isLoading.value = true
+            val result = RetrofitInstance.api.getAllReports()
+            repository.insertReports(result)
+            _reports.value = result
+            _isLoading.value = false
+            _refreshMessage.value = "Successfully loaded new reports 🎉"
         }
     }
 
@@ -354,6 +346,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.addUser(user)
             _isUserInserted.value = true
         }
+    }
+
+    fun resetFetchAllReports() {
+        _isLoading.value = false
+        _refreshMessage.value = null
     }
 
     fun resetLogoutState() {
