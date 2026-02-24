@@ -63,6 +63,7 @@ import com.example.tabangapp.R
 import com.example.tabangapp.db.Report
 import com.example.tabangapp.ui.theme.Purple40
 import com.example.tabangapp.ui.theme.PurpleGrey40
+import com.example.tabangapp.ui.theme.Red
 import com.google.android.gms.location.Priority
 import java.io.File
 
@@ -223,7 +224,7 @@ fun AddReport(
                             .fillMaxHeight(),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = PurpleGrey40,
+                            containerColor = Red,
                             contentColor = Color.White
                         ),
                         enabled = !isLoading,
@@ -275,7 +276,7 @@ fun AddReport(
                         modifier = modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = Color.Black
+                            contentColor = Color.Black,
                         ),
                         enabled = !isLoading,
                         onClick = {
@@ -290,7 +291,7 @@ fun AddReport(
                     enabled = !isLoading,
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = PurpleGrey40,
+                        containerColor = Red,
                         contentColor = Color.White
                     ),
                     onClick = {

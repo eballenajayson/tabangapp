@@ -188,7 +188,7 @@ fun Victim(
                 }
             }
             FloatingActionButton(
-                containerColor = PurpleGrey40,
+                containerColor = Red,
                 contentColor = Color.White,
                 onClick = {
                     navController.navigate("add-report")

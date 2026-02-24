@@ -49,6 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.tabangapp.R
 import com.example.tabangapp.ui.theme.PurpleGrey40
+import com.example.tabangapp.ui.theme.Red
 
 
 @Composable
@@ -102,7 +103,7 @@ fun Register(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter(R.drawable.logo),
+                    painter = rememberAsyncImagePainter(R.drawable.transport),
                     contentDescription = "Logo",
                     modifier = Modifier
                         .size(150.dp),
@@ -194,7 +195,7 @@ fun Register(
                     enabled = !isLoading,
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = PurpleGrey40,
+                        containerColor = Red,
                         contentColor = Color.White
                     ),
                     onClick = {
