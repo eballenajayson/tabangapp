@@ -164,7 +164,7 @@ fun Victim(
                                 report.imageUri?.let { uriString ->
                                     val uri = uriString.toUri()
                                     val painter = rememberAsyncImagePainter(
-                                        model = "http://10.0.2.2:8000${uri}"
+                                        model = "https://tabangapi-fastapi-production.up.railway.app${uri}"
                                     )
                                     Image(
                                         painter = painter,
@@ -176,6 +176,7 @@ fun Victim(
                                         contentScale = ContentScale.Fit
                                     )
                                 }
+                                Text(text = "${report.imageUri}")
                                 Text(text = report.fullName)
                                 Text(text = report.phoneNumber)
                                 Text(text = report.details)

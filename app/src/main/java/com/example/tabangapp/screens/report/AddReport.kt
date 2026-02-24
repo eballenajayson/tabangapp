@@ -75,7 +75,7 @@ fun AddReport(
     modifier: Modifier = Modifier
 ) {
     val currentUser = mainViewModel.currentUser.value
-    var details by remember { mutableStateOf("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut") }
+    var details by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val isLoading = mainViewModel.isLoading.value
     val longitude = mainViewModel.longitude.value

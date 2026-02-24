@@ -70,8 +70,8 @@ fun Start(
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
     val options = listOf("Volunteer", "Victim")
-    var username by remember { mutableStateOf("johndoe") }
-    var password by remember { mutableStateOf("12345") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val isLoading = mainViewModel.isLoading.value
     val loginSuccess = mainViewModel.loginSuccess.value
@@ -151,14 +151,16 @@ fun Start(
         if (loginSuccess) {
             snackbarHostState.showSnackbar("Successfully logged in 🎉")
             if(currentUser != null){
-                if(currentUser.loggedInAs == "volunteer"){
-                    navController.navigate("volunteer"){
+                when(currentUser.loggedInAs){
+                    "volunteer" -> navController.navigate("volunteer"){
                         popUpTo(0){ inclusive = true }
                         launchSingleTop = true
                     }
-                }
-                if(currentUser.loggedInAs == "victim"){
-                    navController.navigate("victim"){
+                    "victim" -> navController.navigate("victim"){
+                        popUpTo(0){ inclusive = true }
+                        launchSingleTop = true
+                    }
+                    else -> navController.navigate("volunteer"){
                         popUpTo(0){ inclusive = true }
                         launchSingleTop = true
                     }

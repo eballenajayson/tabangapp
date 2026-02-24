@@ -57,11 +57,11 @@ fun Register(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    var username by remember { mutableStateOf("johndoe") }
-    var password by remember { mutableStateOf("12345") }
-    var confirmPassword by remember { mutableStateOf("12345") }
-    var fullName by remember { mutableStateOf("John Doe") }
-    var phoneNumber by remember { mutableStateOf("12345") }
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val isLoading = mainViewModel.isLoading.value
     val snackbarHostState = remember { SnackbarHostState() }
